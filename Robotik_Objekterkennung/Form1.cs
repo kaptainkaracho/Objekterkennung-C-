@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Robotik_Objekterkennung
 {
@@ -140,7 +141,28 @@ namespace Robotik_Objekterkennung
             }
 
             // Erstellen des Scatter Plots
-             
+            Series series1 = new Series();
+            series1.Name = "Center Points";
+            series1.ChartType = SeriesChartType.Point;
+
+            Series series2 = new Series();
+            series2.Name = "Corner Points";
+            series2.ChartType = SeriesChartType.Point;
+
+            scatterPlot.Series.Clear(); // leert alle alten Reihen
+
+            for (int i = 0; i < dataCorners.Count(); i++)
+            {
+                series1.Points.AddXY(dataCorners[i][0], dataCorners[i][1]);
+            }
+
+            for (int i = 0; i < dataCenters.Count(); i++)
+            {
+                series2.Points.AddXY(dataCenters[i][0], dataCenters[i][1]);
+            }
+
+            scatterPlot.Series.Add(series1);
+            scatterPlot.Series.Add(series2);
         }
     }
 }
