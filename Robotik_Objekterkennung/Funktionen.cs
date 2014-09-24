@@ -8,15 +8,16 @@ namespace Robotik_Objekterkennung
 {
     class Funktionen
     {
-        // konvertiert die Koordinaten des Bildes in Roboterkoordinaten
-        static public void convertCoordinates(string filename)
-        {
-            
-        }
-
         // berechnet den Flächeninhalt eines Polygons
-        static public double calcAreaPolygon(List<Punkt> points)
+        static public double calcAreaPolygon(List<Punkt> inputPoints)
         {
+            List<Punkt> points = new List<Punkt>();
+            // transferieren der Punktdaten
+            for (int i = 0; i < inputPoints.Count; i++)
+            {
+                points.Add(inputPoints[i]);
+            }
+
             // Liste mit sortierten Punkten
             List<Punkt> calcPoints = new List<Punkt>();
             Punkt tmpPoint = null;
@@ -113,8 +114,15 @@ namespace Robotik_Objekterkennung
         }
 
         // berechnet den Mittelpunkt eines Viereckes
-        static public Punkt calcCenterCube(List<Punkt> points)
+        static public Punkt calcCenterCube(List<Punkt> inputPoints)
         {
+            List<Punkt> points = new List<Punkt>();
+            // transferieren der Punktdaten
+            for (int i = 0; i < inputPoints.Count; i++)
+            {
+                points.Add(inputPoints[i]);    
+            }
+
             // Liste mit sortierten Punkten
             List<Punkt> calcPoints = new List<Punkt>();
             Punkt tmpPoint = null;
@@ -240,6 +248,11 @@ namespace Robotik_Objekterkennung
                 Math.Pow(points[3].getY() - points[0].getY(), 2));
 
             return d1 + d2 + d3 + d4;
+        }
+
+        public static double calculateEukDistance(Punkt p1, Punkt p2)
+        {
+            return Math.Sqrt(Math.Pow(p1.getX() - p2.getX(), 2) + Math.Pow(p1.getY() - p2.getY(), 2));
         }
     }
 }

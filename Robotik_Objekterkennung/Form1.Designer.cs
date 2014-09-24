@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.btDetector = new System.Windows.Forms.Button();
             this.btCenter = new System.Windows.Forms.Button();
             this.btSync = new System.Windows.Forms.Button();
@@ -44,6 +44,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.picBox = new System.Windows.Forms.PictureBox();
+            this.btConvert = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.scatterPlot)).BeginInit();
             this.tabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -65,7 +66,7 @@
             // btCenter
             // 
             this.btCenter.Enabled = false;
-            this.btCenter.Location = new System.Drawing.Point(1050, 105);
+            this.btCenter.Location = new System.Drawing.Point(1049, 102);
             this.btCenter.Name = "btCenter";
             this.btCenter.Size = new System.Drawing.Size(108, 23);
             this.btCenter.TabIndex = 1;
@@ -76,7 +77,7 @@
             // btSync
             // 
             this.btSync.Enabled = false;
-            this.btSync.Location = new System.Drawing.Point(1050, 150);
+            this.btSync.Location = new System.Drawing.Point(1050, 512);
             this.btSync.Name = "btSync";
             this.btSync.Size = new System.Drawing.Size(108, 23);
             this.btSync.TabIndex = 2;
@@ -96,7 +97,7 @@
             // btView
             // 
             this.btView.Enabled = false;
-            this.btView.Location = new System.Drawing.Point(1051, 59);
+            this.btView.Location = new System.Drawing.Point(1050, 56);
             this.btView.Name = "btView";
             this.btView.Size = new System.Drawing.Size(107, 23);
             this.btView.TabIndex = 5;
@@ -106,15 +107,16 @@
             // 
             // scatterPlot
             // 
-            chartArea1.Name = "ChartArea1";
-            this.scatterPlot.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.scatterPlot.Legends.Add(legend1);
+            chartArea2.Name = "ChartArea1";
+            this.scatterPlot.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.scatterPlot.Legends.Add(legend2);
             this.scatterPlot.Location = new System.Drawing.Point(6, 6);
             this.scatterPlot.Name = "scatterPlot";
             this.scatterPlot.Size = new System.Drawing.Size(1011, 543);
             this.scatterPlot.TabIndex = 6;
             this.scatterPlot.Text = "scatter";
+            this.scatterPlot.MouseMove += new System.Windows.Forms.MouseEventHandler(this.scatterPlot_MouseMove);
             // 
             // progressBar
             // 
@@ -193,11 +195,23 @@
             this.picBox.TabIndex = 0;
             this.picBox.TabStop = false;
             // 
+            // btConvert
+            // 
+            this.btConvert.Enabled = false;
+            this.btConvert.Location = new System.Drawing.Point(1050, 147);
+            this.btConvert.Name = "btConvert";
+            this.btConvert.Size = new System.Drawing.Size(107, 23);
+            this.btConvert.TabIndex = 12;
+            this.btConvert.Text = "Konvertiere";
+            this.btConvert.UseVisualStyleBackColor = true;
+            this.btConvert.Click += new System.EventHandler(this.btConvert_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1170, 635);
+            this.Controls.Add(this.btConvert);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btInitialize);
             this.Controls.Add(this.btInifile);
@@ -236,6 +250,7 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.PictureBox picBox;
+        private System.Windows.Forms.Button btConvert;
     }
 }
 

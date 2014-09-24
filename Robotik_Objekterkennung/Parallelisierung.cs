@@ -14,7 +14,7 @@ namespace Robotik_Objekterkennung
         private List<List<Punkt>> group = new List<List<Punkt>>();
 
         // Ecken
-        private List<Punkt> corners;
+        private List<Punkt> corners = null;
 
         // Mittelpunkte
         private List<Punkt> centersDices = new List<Punkt>();
@@ -29,6 +29,8 @@ namespace Robotik_Objekterkennung
         private double radius;
         private int groupSize;
 
+        private Boolean fin = false;
+
         public Parallelisierung(double maxArea, double minArea, double range, 
             double maxAreaConvert, double minAreaConvert, double rangeConvert,
             double radius, int groupSize)
@@ -42,16 +44,26 @@ namespace Robotik_Objekterkennung
             this.minAreaConvert = minAreaConvert;
             this.rangeConvert = rangeConvert;
         }
+        // Eckdaten laden
+        public void setCorners(List<Punkt> corners)
+        {
+            this.corners = corners;
+        }
+
         // iteratives Gruppieren
-        public void createGroups(List<Punkt> corners)
+        public void createGroups()
         {
             int index = 0;
             while (groupCorners(corners, index) == true)
             {
                 index++;
-                if (corners.Count < index)
+                if (corners.Count <= index)
                 {
-                    index = 0;       
+                    index = 0;
+                }
+                else if (corners.Count < 4)
+                {
+                    break;
                 }
             }        
         }
@@ -73,19 +85,32 @@ namespace Robotik_Objekterkennung
                         tmpList.Add(corners[j]);                     
                     }
 
-                    if (tmpList.Count >= groupSize-1)
-                    {
-                        tmpList.Add(corners[index]);
-                        group.Add(tmpList);
-                        for (int i = 0; i < tmpList.Count; i++)
-                        {
-                            corners.Remove(tmpList[i]);
-                        }
-                        return true;
-                    }
+                    //if (tmpList.Count >= groupSize-1)
+                    //{
+                    //    tmpList.Add(corners[index]);
+                    //    group.Add(tmpList);
+                    //    for (int i = 0; i < tmpList.Count; i++)
+                    //    {
+                    //        corners.Remove(tmpList[i]);
+                    //    }
+                    //    return true;
+                    //}
                 }
             }
-            return false;
+            if (tmpList.Count == 0)
+            {
+                return false;
+            }
+            else
+            {
+                tmpList.Add(corners[index]);
+                group.Add(tmpList);
+                for (int i = 0; i < tmpList.Count; i++)
+                {
+                    corners.Remove(tmpList[i]);
+                }
+                return true; 
+            }
         }
 
         // Berechnung der Mittelpunkte
@@ -118,6 +143,16 @@ namespace Robotik_Objekterkennung
                     }
                 }
             }
+            if (fin == false)
+            {
+                // Gruppen neu bilden
+                reGroupCorners();
+                if (group.Count == 1)
+                {
+                    fin = true;
+                }
+                calculateCenters(countThreads);
+            }        
         }
 
         private void startCentering(object element)
@@ -152,30 +187,55 @@ namespace Robotik_Objekterkennung
                                     {
                                         centersDices.Add(center);            
                                     }
-                                    points.RemoveAt(i);
-                                    points.RemoveAt(j);
-                                    points.RemoveAt(k);
-                                    points.RemoveAt(l);
+                                    for (int z = 0; z < tmpList.Count; z++)
+                                    {
+                                        points.Remove(tmpList[z]);
+                                    }
+                                    tmpList.Clear();
                                     return true;
                                     
-                                } else if ((area >= minAreaConvert) && (area <= maxAreaConvert) && (r <= rangeConvert)){
+                                } else if ((area >= minAreaConvert) && (area <= maxAreaConvert)
+                                    && (r <= rangeConvert))
+                                {
                                     Punkt center = Funktionen.calcCenterCube(tmpList);
                                     lock (centerConvert)
                                     {
                                         centerConvert.Add(center);
                                     }
-                                    points.RemoveAt(i);
-                                    points.RemoveAt(j);
-                                    points.RemoveAt(k);
-                                    points.RemoveAt(l);
+                                    for (int z = 0; z < tmpList.Count; z++)
+                                    {
+                                        points.Remove(tmpList[z]);
+                                    }
+                                    tmpList.Clear();
                                     return true;
-                                } 
+                                }
+                                tmpList.Clear();
+                                tmpList = null;
                             }
                         }
                     }
                 }
             }
             return false;
+        }
+
+        // Gruppen neu erstellen
+        private void reGroupCorners()
+        {
+            for (int i = 0; i < group.Count; i++)
+            {
+                for (int j = 0; j < group[i].Count; j++)
+                {
+                    corners.Add(group[i][j]);       
+                }
+            }
+
+            // Gruppen leeren
+            group.Clear();
+            // Radius erhöhen
+            radius = radius + 50;
+            // neu gruppieren lassen
+            createGroups();
         }
 
         // exportieren der Mittelpunkte in eine CSV-Datei
@@ -193,6 +253,13 @@ namespace Robotik_Objekterkennung
                 }
                 sw.Close();
             }
+        }
+
+
+        // gibt die Mittelpunkt zur Konvertierung wieder
+        public List<Punkt> getCentersConvert()
+        {
+            return this.centerConvert;
         }
     }
 }

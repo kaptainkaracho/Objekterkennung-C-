@@ -40,6 +40,10 @@ namespace Robotik_Objekterkennung
         private double radius;
         private double height;
 
+        private List<Punkt> convertPoints = new List<Punkt>();
+        private Punkt referencePoint1 = null;
+        private Punkt referencePoint2 = null;
+
         public Form1()
         {
             InitializeComponent();
@@ -85,6 +89,7 @@ namespace Robotik_Objekterkennung
         // importieren der Initialisierungsdefinitionen
         private void readIniFile()
         {
+            double ref1X = 0 , ref1Y = 0 , ref2X = 0, ref2Y = 0;
             try
             {
                 string line;
@@ -163,9 +168,27 @@ namespace Robotik_Objekterkennung
                             {
                                 radius = Convert.ToDouble(split[1]);
                             }
+                            else if (split[0] == "REFERENZ_1_X")
+                            {
+                                ref1X = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "REFERENZ_1_Y")
+                            {
+                                ref1Y = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "REFERENZ_2_X")
+                            {
+                                ref2X = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "REFERENZ_2_Y")
+                            {
+                                ref2Y = Convert.ToDouble(split[1]);
+                            }
                         }
                     }
                 }
+                referencePoint1 = new Punkt(ref1X, ref1Y);
+                referencePoint2 = new Punkt(ref2X, ref2Y);
             }
             catch (Exception e)
             {
@@ -197,10 +220,12 @@ namespace Robotik_Objekterkennung
                 }
             } catch (Exception ex){}
 
-            parallelisierung.createGroups(corners);
+            // Gruppen bilden
+            parallelisierung.setCorners(corners);
+            parallelisierung.createGroups();
 
             // Berechnung der Mittelpunkte
-            parallelisierung.calculateCenters(1);
+            parallelisierung.calculateCenters(3);
 
             // speichern der Mittelpunkte
             parallelisierung.exportCenters(output_corners);
@@ -247,9 +272,14 @@ namespace Robotik_Objekterkennung
             Series series2 = new Series();
             series2.Name = "Center Points";
             series2.ChartType = SeriesChartType.Point;
+            // Mittelpunkte - Konvertierung
+            Series series3 = new Series();
+            series3.Name = "Center Big Cubes";
+            series3.ChartType = SeriesChartType.Point;
 
             scatterPlot.Series.Clear(); // leert alle alten Reihen
 
+            // Series 1 & 2
             for (int i = 0; i < dataCorners.Count(); i++)
             {
                 series1.Points.AddXY(dataCorners[i][0], dataCorners[i][1]);
@@ -263,13 +293,23 @@ namespace Robotik_Objekterkennung
             scatterPlot.Series.Add(series1);
             scatterPlot.Series.Add(series2);
 
+            // Series 3
+            List<Punkt> data = parallelisierung.getCentersConvert();
+            for (int i = 0; i < data.Count; i++)
+            {
+                series3.Points.AddXY(data[i].getX(), data[i].getY());
+                convertPoints.Add(data[i]);
+            }
+            scatterPlot.Series.Add(series3);
+
             // schaltet das Synchronisieren frei
-            btSync.Enabled = true;
+            btConvert.Enabled = true;
 
             progressBar.MarqueeAnimationSpeed = 0;
             progressBar.Visible = false;
         }
 
+        // Gibt es den Prozess (anhand PID)?
         private bool ProcessExists(int id)
         {
             return Process.GetProcesses().Any(x => x.Id == id);
@@ -306,6 +346,103 @@ namespace Robotik_Objekterkennung
                 tbInifile.Text = openFileDialog.FileName;
             }
             progressBar.MarqueeAnimationSpeed = 0;
+        }
+
+        private Point? prevPosition = null;
+        private ToolTip tooltip = new ToolTip();
+
+        private void scatterPlot_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (prevPosition.HasValue && pos == prevPosition.Value)
+                return;
+            tooltip.RemoveAll();
+            prevPosition = pos;
+            var results = scatterPlot.HitTest(pos.X, pos.Y, false,
+                                            ChartElementType.DataPoint);
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var prop = result.Object as DataPoint;
+                    if (prop != null)
+                    {
+                        var pointXPixel = result.ChartArea.AxisX.ValueToPixelPosition(prop.XValue);
+                        var pointYPixel = result.ChartArea.AxisY.ValueToPixelPosition(prop.YValues[0]);
+
+                        // check if the cursor is really close to the point (2 pixels around the point)
+                        if (Math.Abs(pos.X - pointXPixel) < 2 &&
+                            Math.Abs(pos.Y - pointYPixel) < 2)
+                        {
+                            tooltip.Show("X=" + prop.XValue + ", Y=" + prop.YValues[0], this.scatterPlot,
+                                            pos.X, pos.Y - 15);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void btConvert_Click(object sender, EventArgs e)
+        {
+            if (convertPoints.Count == 2)
+            {
+                // Punkt 1
+                Punkt p1 = convertPoints[0];
+                // Punkt 2
+                Punkt p2 = convertPoints[1];
+
+                // euklidische Länge - Big Cubes Detektorkoordinaten
+                double d1 = Funktionen.calculateEukDistance(p1, p2);
+                // euklidische Länge - Referenzkoordinaten
+                double d2 = Funktionen.calculateEukDistance(referencePoint1, referencePoint2);
+
+                // Verhältnis zur Umrechnung der Koordinaten
+                double relation = d1 / d2;
+
+                // Mittelpunkte laden
+                List<Punkt> dataCenters = new List<Punkt>();
+                String line;
+                using (StreamReader sr = new StreamReader(output_corners))
+                {
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        line = line.Replace('.', ',');
+                        String[] split = line.Split(';');
+                        Punkt point = new Punkt(Convert.ToDouble(split[0]),
+                            Convert.ToDouble(split[1])); 
+                        dataCenters.Add(point);
+                    }
+
+                }
+
+                // Umrechnung auf Millimeter
+                List<Punkt> centerMilli = new List<Punkt>();
+                for (int i = 0; i < dataCenters.Count; i++)
+                {
+                    Punkt point = new Punkt(dataCenters[i].getX() / relation,
+                        dataCenters[i].getY() / relation);
+                    centerMilli.Add(point);
+                }
+                dataCenters.Clear();
+                dataCenters = null;
+
+                Punkt p1Milli = new Punkt(p1.getX() / relation,
+                    p1.getY() / relation);
+                Punkt p2Milli = new Punkt(p2.getX() / relation,
+                    p2.getY() / relation);
+
+                // Rotationswinkel bestimmen
+                
+
+
+                // Synchronisation (Datenaustausch) freischalten
+                btSync.Enabled = true;
+            }
+            else
+            {
+                MessageBox.Show("Zu wenig oder zu viele Referenzpunkte: Bitte führen Sie die Mittelpunkts" +
+                    "berechnung erneut mit anderen Größe aus");
+            }            
         }
     }
 }
