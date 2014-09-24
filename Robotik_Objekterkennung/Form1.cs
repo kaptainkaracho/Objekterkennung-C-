@@ -29,22 +29,36 @@ namespace Robotik_Objekterkennung
         private int port;
         private string ipadress;
 
+        private double maxAreaCentering;
+        private double maxAreaConverting;
+        private double minAreaCentering;
+        private double minAreaConverting;
+        private double rangeCentering;
+        private double rangeConverting;
+
+        private int groupSize;
+        private double radius;
+        private double height;
+
         public Form1()
         {
             InitializeComponent();
             tbInifile.Text = "D:\\Objekterkennung\\Objekterkennung.ini";
         }
+
         // Fenster schließen
         private void btClose_Click(object sender, EventArgs e)
         {
             this.Close();
         }
+
         // zeigt das Bild der Objekterkennung an
         private void btView_Click(object sender, EventArgs e)
         {
             picBox.Image = null;
             picBox.Load(pictureoutput);
         }
+
         // führt die Objekterkennung aus - C++ Applikation wird gestartet
         private void btDetector_Click(object sender, EventArgs e)
         {
@@ -67,6 +81,7 @@ namespace Robotik_Objekterkennung
 
             progressBar.MarqueeAnimationSpeed = 0; 
         }
+
         // importieren der Initialisierungsdefinitionen
         private void readIniFile()
         {
@@ -112,6 +127,42 @@ namespace Robotik_Objekterkennung
                             {
                                 ipadress = split[1];
                             }
+                            else if (split[0] == "Max_Area_Center")
+                            {
+                                maxAreaCentering = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "Min_Area_Center")
+                            {
+                                minAreaCentering = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "Max_Area_Convert")
+                            {
+                                maxAreaConverting = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "Min_Area_Convert")
+                            {
+                                minAreaConverting = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "Range_Center")
+                            {
+                                rangeCentering = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "Range_Convert")
+                            {
+                                rangeConverting = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "GROUPSIZE")
+                            {
+                                groupSize = Convert.ToInt16(split[1]);
+                            }
+                            else if (split[0] == "HEIGHT")
+                            {
+                                height = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "RADIUS")
+                            {
+                                radius = Convert.ToDouble(split[1]);
+                            }
                         }
                     }
                 }
@@ -121,28 +172,41 @@ namespace Robotik_Objekterkennung
 
             }
         }
-        // Python Skript für die Mittelpunktberechnung aufrufen
+
+        // Mittelpunktberechnung aufrufen
         private void btCenter_Click(object sender, EventArgs e)
         {
-            progressBar.Visible = true;
-            progressBar.MarqueeAnimationSpeed = 150;
-            // Python Prozess anlegen
-            ProcessStartInfo startInfo = new ProcessStartInfo(pythonApp);
-            //startInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            // Parallelisiertes Rechnen 
+            Parallelisierung parallelisierung = new Parallelisierung(maxAreaCentering,
+                minAreaCentering, rangeCentering, maxAreaConverting, minAreaConverting,
+                rangeConverting, radius, groupSize);
 
-            startInfo.Arguments = input_corners;
-            startInfo.UseShellExecute = false;
-            int processID = Process.Start(startInfo).Id;
+            List<Punkt> corners = new List<Punkt>();
+            string line;
+            try
+            { 
+                using (StreamReader sr = new StreamReader(input_corners))
+                {
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        line = line.Replace('.', ',');
+                        String[] split = line.Split(';');
+                        Punkt point = new Punkt(Convert.ToDouble(split[0]), Convert.ToDouble(split[1]));
+                        corners.Add(point);
+                    }
+                }
+            } catch (Exception ex){}
 
-            // Wartet auf den Prozess
-            while (ProcessExists(processID))
-            {
-                Thread.Sleep(100);
-            }
+            parallelisierung.createGroups(corners);
+
+            // Berechnung der Mittelpunkte
+            parallelisierung.calculateCenters(1);
+
+            // speichern der Mittelpunkte
+            parallelisierung.exportCenters(output_corners);
 
             // lese Ergebnis ein
             List<double[]> dataCenters = new List<double[]>();
-            String line;
             using (StreamReader sr = new StreamReader(output_corners))
             {
                 while ((line = sr.ReadLine()) != null)
@@ -205,6 +269,7 @@ namespace Robotik_Objekterkennung
             progressBar.MarqueeAnimationSpeed = 0;
             progressBar.Visible = false;
         }
+
         private bool ProcessExists(int id)
         {
             return Process.GetProcesses().Any(x => x.Id == id);
@@ -224,6 +289,7 @@ namespace Robotik_Objekterkennung
                 btCenter.Enabled = true;
             }
         }
+
         // OpenFileDialog um den Dateipfad zur Initialisierungsdatei zu finden
         private void btInifile_Click(object sender, EventArgs e)
         {
