@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             this.btDetector = new System.Windows.Forms.Button();
             this.btCenter = new System.Windows.Forms.Button();
             this.btSync = new System.Windows.Forms.Button();
@@ -45,11 +47,15 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.picBox = new System.Windows.Forms.PictureBox();
             this.btConvert = new System.Windows.Forms.Button();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.scatterPlotTrans = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.scatterPlot)).BeginInit();
             this.tabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scatterPlotTrans)).BeginInit();
             this.SuspendLayout();
             // 
             // btDetector
@@ -107,10 +113,10 @@
             // 
             // scatterPlot
             // 
-            chartArea2.Name = "ChartArea1";
-            this.scatterPlot.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.scatterPlot.Legends.Add(legend2);
+            chartArea3.Name = "ChartArea1";
+            this.scatterPlot.ChartAreas.Add(chartArea3);
+            legend3.Name = "Legend1";
+            this.scatterPlot.Legends.Add(legend3);
             this.scatterPlot.Location = new System.Drawing.Point(6, 6);
             this.scatterPlot.Name = "scatterPlot";
             this.scatterPlot.Size = new System.Drawing.Size(1011, 543);
@@ -158,6 +164,7 @@
             // tabControl
             // 
             this.tabControl.Controls.Add(this.tabPage1);
+            this.tabControl.Controls.Add(this.tabPage3);
             this.tabControl.Controls.Add(this.tabPage2);
             this.tabControl.Location = new System.Drawing.Point(13, 12);
             this.tabControl.Name = "tabControl";
@@ -206,6 +213,28 @@
             this.btConvert.UseVisualStyleBackColor = true;
             this.btConvert.Click += new System.EventHandler(this.btConvert_Click);
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.scatterPlotTrans);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(1023, 555);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "transformierte Koordinaten";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // scatterPlotTrans
+            // 
+            chartArea4.Name = "ChartArea1";
+            this.scatterPlotTrans.ChartAreas.Add(chartArea4);
+            legend4.Name = "Legend1";
+            this.scatterPlotTrans.Legends.Add(legend4);
+            this.scatterPlotTrans.Location = new System.Drawing.Point(3, 3);
+            this.scatterPlotTrans.Name = "scatterPlotTrans";
+            this.scatterPlotTrans.Size = new System.Drawing.Size(1017, 549);
+            this.scatterPlotTrans.TabIndex = 0;
+            this.scatterPlotTrans.Text = "Transformierte Koordinaten";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -229,6 +258,8 @@
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.scatterPlotTrans)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -251,6 +282,8 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.PictureBox picBox;
         private System.Windows.Forms.Button btConvert;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.DataVisualization.Charting.Chart scatterPlotTrans;
     }
 }
 

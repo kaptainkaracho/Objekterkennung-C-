@@ -22,6 +22,7 @@ namespace Robotik_Objekterkennung
         private string input_corners;
         private string output_corners;
         private string pictureoutput;
+        private string transOutput;
 
         private string inifile;
         private string python;
@@ -41,6 +42,7 @@ namespace Robotik_Objekterkennung
         private double height;
 
         private List<Punkt> convertPoints = new List<Punkt>();
+        private List<Punkt> synPoints;
         private Punkt referencePoint1 = null;
         private Punkt referencePoint2 = null;
 
@@ -183,6 +185,10 @@ namespace Robotik_Objekterkennung
                             else if (split[0] == "REFERENZ_2_Y")
                             {
                                 ref2Y = Convert.ToDouble(split[1]);
+                            }
+                            else if (split[0] == "TRANS_CENTERS")
+                            {
+                                transOutput = split[1];
                             }
                         }
                     }
@@ -431,9 +437,47 @@ namespace Robotik_Objekterkennung
                 Punkt p2Milli = new Punkt(p2.getX() / relation,
                     p2.getY() / relation);
 
-                // Rotationswinkel bestimmen
-                
+                // An Roboterkoordinaten anpassen
+                List<Punkt> rPoints = Funktionen.transformCoordinates2P(p1Milli,
+                    p2Milli, referencePoint1, referencePoint2, centerMilli);
 
+                // speichern der transformierten Punkten
+                using (StreamWriter sw = new StreamWriter(transOutput))
+                {
+                    for (int i = 0; i < rPoints.Count; i++)
+                    {
+                        line = Convert.ToString(rPoints[i].getX()) + ";"
+                            + Convert.ToString(rPoints[i].getY());
+                        sw.WriteLine(line);
+                        line = "";
+                    }
+                    sw.Close();
+                }
+
+                // ins Klassenattribute verschieben
+                this.synPoints = rPoints;
+
+                Series series1 = new Series();
+                series1.Name = "Transformierte Mittelpunkte";
+                series1.ChartType = SeriesChartType.Point;
+
+                Series series2 = new Series();
+                series2.Name = "Referenzpunkte";
+                series2.ChartType = SeriesChartType.Point;
+
+                for (int i = 0; i < rPoints.Count; i++)
+                {
+                    series1.Points.AddXY(rPoints[i].getX(), rPoints[i].getY());
+                }
+
+                series2.Points.AddXY(referencePoint1.getX(), referencePoint1.getY());
+                series2.Points.AddXY(referencePoint2.getX(), referencePoint2.getY());
+
+                scatterPlotTrans.Series.Clear();
+                scatterPlotTrans.Series.Add(series1);
+                scatterPlotTrans.Series.Add(series2);
+
+                MessageBox.Show("Punkte wurden transformiert.");
 
                 // Synchronisation (Datenaustausch) freischalten
                 btSync.Enabled = true;
