@@ -488,5 +488,17 @@ namespace Robotik_Objekterkennung
                     "berechnung erneut mit anderen Größe aus");
             }            
         }
+
+        private void btSync_Click(object sender, EventArgs e)
+        {
+            Kommunikation communication = new Kommunikation(ipadress, port, "tcp");
+            for (int i = 0; i < synPoints.Count; i++)
+            {
+                String line = Convert.ToString(synPoints[i].getX()) + ";" + 
+                    Convert.ToString(synPoints[i].getY());
+                communication.sendMsg(line);
+            }
+            communication.close();
+        }
     }
 }
